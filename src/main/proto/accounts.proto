@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package org.example.proto;
+
+option java_package = "org.example.proto";
+option java_multiple_files = true;
+
+service AccountService {
+    rpc Register(RegisterReq) returns (RegisterResp);
+    rpc Login(LoginReq) returns (LoginResp);
+}
+
+message RegisterReq {
+    string username = 1;
+    string password = 2;
+}
+
+message RegisterResp {
+    int64 account_id = 1;
+}
+
+message LoginReq {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResp {
+    int64 account_id = 1;
+}

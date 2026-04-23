@@ -2,7 +2,6 @@ package com.example.api_gateway.dto
 
 
 data class CreateTrainingRequest(
-    val accountId: Long,
     val timestamp: Long,
     val category: String,
     var exercises: MutableList<AddExerciseRequest> = mutableListOf(),
@@ -22,7 +21,7 @@ data class AddExerciseRequest(
 
 data class RemoveExerciseRequest(
     val trainingId: Long,
-    val workoutExerciseId: Long
+    val exerciseId: Long
 )
 
 ////////////////////////// Ответы
@@ -45,7 +44,7 @@ data class ExerciseResponse(
 )
 
 data class AddExerciseResponse(
-    val workoutExerciseId: Long
+    val exerciseId: Long
 )
 
 data class ErrorResponse(

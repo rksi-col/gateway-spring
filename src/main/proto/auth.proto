@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package org.example.proto;
+
+option java_package = "org.example.proto";
+option java_multiple_files = true;
+
+service AuthService {
+    rpc GenerateToken(GenerateTokenReq) returns (GenerateTokenResp);
+    rpc ValidateToken(ValidateTokenReq) returns (ValidateTokenResp);
+}
+
+message GenerateTokenReq {
+    int64 account_id = 1;
+}
+
+message GenerateTokenResp {
+    string token = 1;
+}
+
+message ValidateTokenReq {
+    string token = 1;
+}
+
+message ValidateTokenResp {
+    bool valid = 1;
+    int64 account_id = 2;
+}

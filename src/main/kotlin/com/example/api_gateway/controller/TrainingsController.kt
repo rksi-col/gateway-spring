@@ -7,6 +7,7 @@ import com.example.api_gateway.dto.CreateTrainingResponse
 import com.example.api_gateway.dto.ExerciseResponse
 import com.example.api_gateway.dto.RemoveExerciseRequest
 import com.example.api_gateway.dto.TrainingResponse
+import jakarta.servlet.http.HttpServletRequest
 import net.devh.boot.grpc.client.inject.GrpcClient
 import org.example.proto.AddExerciseReq
 import org.example.proto.CreateExercise
@@ -37,12 +38,17 @@ class TrainingsController(
 ) {
 
     @PostMapping
-    fun createTraining(@RequestBody request: CreateTrainingRequest): CreateTrainingResponse {
+    fun createTraining(
+        request: HttpServletRequest,
+        @RequestBody body: CreateTrainingRequest
+    ): CreateTrainingResponse {
+        val accountId = request.getAttribute("accountId") as Long
+
         val grpcRequest = CreateTrainingReq.newBuilder()
-            .setAccountId(request.accountId)
-            .setTimestamp(request.timestamp)
-            .setCategory(request.category)
-            .addAllExercises(request.exercises.map { ex ->
+            .setAccountId(accountId)
+            .setTimestamp(body.timestamp)
+            .setCategory(body.category)
+            .addAllExercises(body.exercises.map { ex ->
                 CreateExercise.newBuilder()
                     .setExerciseId(ex.exerciseId)
                     .setSortId(ex.sortId)
@@ -51,9 +57,9 @@ class TrainingsController(
             .build()
 
         stub.createTraining(grpcRequest)
-
         return CreateTrainingResponse(status = "CREATED")
     }
+
 
     // ==================== ПОЛУЧЕНИЕ ====================
 
@@ -61,11 +67,13 @@ class TrainingsController(
      * Получить тренировку по точному timestamp (миллисекунды)
      * GET /api/trainings/timestamp/1713123456789
      */
-    @GetMapping("/timestamp/{timestamp}/{accountId}")
+    @GetMapping("/timestamp/{timestamp}")
     fun getTrainingByTimestamp(
-        @RequestParam accountId: Long,      // ← Добавляем параметр
+        request: HttpServletRequest,
         @PathVariable timestamp: Long
     ): TrainingResponse {
+        val accountId = request.getAttribute("accountId") as Long
+
         val grpcRequest = GetTrainingReq.newBuilder()
             .setAccountId(accountId)
             .setTimestamp(timestamp)
@@ -85,10 +93,12 @@ class TrainingsController(
      */
     @GetMapping("/range")
     fun getTrainingsByRange(
-        @RequestParam accountId: Long,
+        request: HttpServletRequest,
         @RequestParam from: Long,
         @RequestParam to: Long
     ): List<TrainingResponse> {
+        val accountId = request.getAttribute("accountId") as Long
+
         val grpcRequest = GetTrainingReq.newBuilder()
             .setAccountId(accountId)
             .setRange(
@@ -100,7 +110,6 @@ class TrainingsController(
             .build()
 
         val grpcResponse = stub.getTraining(grpcRequest)
-
         return grpcResponse.trainingsList.map { mapToTrainingResponse(it) }
     }
 
@@ -110,13 +119,19 @@ class TrainingsController(
      */
     @GetMapping("/day")
     fun getTrainingsByDay(
-        @RequestParam accountId: Long,
+        request: HttpServletRequest,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<TrainingResponse> {
+//        val accountId = request.getAttribute("accountId") as Long
+        val accountIdAttr = request.getAttribute("accountId")
+        println("🔍 accountId attribute: $accountIdAttr")  // ← Должен быть не null!
+
+        val accountId = request.getAttribute("accountId") as Long
+
         val startOfDay = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
         val endOfDay = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() - 1
 
-        return getTrainingsByRange(accountId, startOfDay, endOfDay)
+        return getTrainingsByRange(request, startOfDay, endOfDay)
     }
 
     /**
@@ -137,18 +152,21 @@ class TrainingsController(
      */
     @PostMapping("/exercises/add")
     @ResponseStatus(HttpStatus.CREATED)
-    fun addExerciseToTraining(@RequestBody request: AddExerciseRequest): AddExerciseResponse {
+    fun addExerciseToTraining(
+        request: HttpServletRequest,
+        @RequestBody body: AddExerciseRequest
+    ): AddExerciseResponse {
+        val accountId = request.getAttribute("accountId") as Long
+
         val grpcRequest = AddExerciseReq.newBuilder()
-            .setTrainingId(request.trainingId)
-            .setExerciseId(request.exerciseId)
-            .setSortId(request.sortId)
+            .setAccountId(accountId)
+            .setTrainingId(body.trainingId)
+            .setExerciseId(body.exerciseId)
+            .setSortId(body.sortId)
             .build()
 
         val grpcResponse = stub.addExerciseToTraining(grpcRequest)
-
-        return AddExerciseResponse(
-            workoutExerciseId = grpcResponse.workoutExerciseId,
-        )
+        return AddExerciseResponse(exerciseId = grpcResponse.exerciseId)
     }
 
     /**
@@ -157,10 +175,16 @@ class TrainingsController(
      */
     @DeleteMapping("/exercises/remove")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun removeExerciseFromTraining(@RequestBody request: RemoveExerciseRequest) {
+    fun removeExerciseFromTraining(
+        request: HttpServletRequest,
+        @RequestBody body: RemoveExerciseRequest
+    ) {
+        val accountId = request.getAttribute("accountId") as Long
+
         val grpcRequest = RemoveExerciseReq.newBuilder()
-            .setTrainingId(request.trainingId)
-            .setWorkoutExerciseId(request.workoutExerciseId)
+            .setAccountId(accountId)
+            .setTrainingId(body.trainingId)
+            .setExerciseId(body.exerciseId)
             .build()
 
         stub.removeExerciseFromTraining(grpcRequest)
