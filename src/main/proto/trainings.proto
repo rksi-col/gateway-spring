@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package org.example.proto;
+
+option java_package = "org.example.proto";
+option java_multiple_files = true;
+
+service TrainingsService {
+    rpc CreateTraining (CreateTrainingReq) returns (Empty);
+    rpc GetTraining (GetTrainingReq) returns (GetTrainingResp);
+    rpc AddExerciseToTraining (AddExerciseReq) returns (AddExerciseResp);
+    rpc RemoveExerciseFromTraining (RemoveExerciseReq) returns (Empty);
+}
+
+message Empty {}
+
+message CreateExercise {
+    int64 sort_id = 1;
+    int64 exercise_id = 2;
+}
+
+message CreateTrainingReq {
+    int64 account_id = 1;
+    int64 timestamp = 2;
+    string category = 3;
+    repeated CreateExercise exercises = 4;
+}
+
+message GetTrainingReq {
+    int64 account_id = 3;
+    message TimestampRange {
+        int64 from = 1;
+        int64 to = 2;
+    }
+
+    oneof filter {
+        int64 timestamp = 1; // single day
+        TimestampRange range = 2;
+    }
+}
+
+message GetTrainingResp {
+    message Exercise {
+        int64 id = 1;
+        int64 sort_id = 2;
+        string name = 3;
+        string target_muscle = 4;
+    }
+
+    message Training {
+        int64 id = 1;
+        int64 timestamp = 2;
+        string category = 3;
+        repeated Exercise exercises = 4;
+    }
+
+    repeated Training trainings = 1;
+
+}
+
+message AddExerciseReq {
+int64 training_id = 1;
+int64 exercise_id = 2;
+int64 sort_id = 3;
+}
+
+message AddExerciseResp {
+int64 workout_exercise_id = 1;
+}
+
+message RemoveExerciseReq {
+int64 training_id = 1;
+int64 workout_exercise_id = 2;
+}
