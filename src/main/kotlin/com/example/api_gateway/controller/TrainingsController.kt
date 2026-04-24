@@ -74,6 +74,8 @@ class TrainingsController(
     ): TrainingResponse {
         val accountId = request.getAttribute("accountId") as Long
 
+        System.out.println("accountId: $accountId ")
+
         val grpcRequest = GetTrainingReq.newBuilder()
             .setAccountId(accountId)
             .setTimestamp(timestamp)
@@ -157,6 +159,7 @@ class TrainingsController(
         @RequestBody body: AddExerciseRequest
     ): AddExerciseResponse {
         val accountId = request.getAttribute("accountId") as Long
+        System.out.println("exId: " + body.exerciseId)
 
         val grpcRequest = AddExerciseReq.newBuilder()
             .setAccountId(accountId)

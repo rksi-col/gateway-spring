@@ -41,6 +41,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
+    implementation("com.itextpdf:itext7-core:7.2.5")
+    implementation("com.itextpdf:font-asian:7.2.5")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

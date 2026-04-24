@@ -11,7 +11,7 @@ class WebConfig(
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(authInterceptor)
-            .addPathPatterns("/api/trainings/**")  // ← Все эндпоинты тренировок
-            .excludePathPatterns("/api/auth/**")    // ← Кроме логина/регистрации
+            .addPathPatterns("/api/trainings/**", "/api/reports/**")  // ← Добавь /api/reports/**
+            .excludePathPatterns("/api/auth/**")
     }
 }
